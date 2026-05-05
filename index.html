@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>GX Repo Core V5</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+
+:root{
+  --red:#ff174f;
+  --purple:#8b35ff;
+  --line:#3b294d;
+  --text:#f5f1ff;
+  --muted:#9188a7;
+  --green:#00ff9d;
+  --dark:#06050a;
+}
+
+html,body{
+  width:100%;
+  min-height:100%;
+  overflow-x:hidden;
+}
+
+body{
+  color:var(--text);
+  font-family:'Rajdhani',sans-serif;
+  padding:14px;
+  background:
+    radial-gradient(circle at 85% 5%,#ff174f28,transparent 28%),
+    radial-gradient(circle at 5% 85%,#8b35ff22,transparent 34%),
+    linear-gradient(135deg,#06050a,#0c0712 55%,#050408);
+}
+
+body:before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  opacity:.25;
+  background:
+    linear-gradient(#ff174f14 1px,transparent 1px),
+    linear-gradient(90deg,#8b35ff14 1px,transparent 1px);
+  background-size:28px 28px;
+}
+
+.scan{
+  position:fixed;
+  left:0;
+  right:0;
+  top:-10%;
+  height:1px;
+  background:var(--red);
+  box-shadow:0 0 18px var(--red);
+  animation:scan 4s linear infinite;
+  z-index:99;
+}
+@keyframes scan{to{top:110%}}
+
+.app{
+  position:relative;
+  z-index:2;
+  width:100%;
+  max-width:520px;
+  margin:0 auto;
+  padding-bottom:18px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:14px;
+}
+
+.logo{
+  font-family:'Orbitron',sans-serif;
+  font-weight:800;
+  font-size:18px;
+  letter-spacing:1.2px;
+  line-height:1.05;
+}
+
+.logo span{
+  color:var(--red);
+  text-shadow:0 0 12px var(--red);
+}
+
+.logo small{
+  display:block;
+  margin-top:5px;
+  font-family:'Rajdhani';
+  font-size:10px;
+  color:var(--muted);
+  letter-spacing:2.5px;
+}
+
+.status{
+  flex-shrink:0;
+  border:1px solid var(--red);
+  color:var(--red);
+  padding:8px 10px;
+  font-family:'Orbitron';
+  font-size:9px;
+  clip-path:polygon(9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%,0 9px);
+}
+
+.status.on{
+  color:var(--green);
+  border-color:var(--green);
+  box-shadow:0 0 12px #00ff9d55;
+}
+
+.panel{
+  position:relative;
+  overflow:hidden;
+  margin-bottom:13px;
+  padding:13px;
+  background:linear-gradient(135deg,#110b1a,#08060d);
+  border:1px solid var(--line);
+  clip-path:polygon(18px 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%,0 18px);
+}
+
+.panel:before{
+  content:"";
+  position:absolute;
+  right:-35%;
+  top:-40%;
+  width:80%;
+  height:130%;
+  background:radial-gradient(circle,#ff174f25,transparent 60%);
+  pointer-events:none;
+}
+
+.panel:after{
+  content:"";
+  position:absolute;
+  left:0;
+  top:16px;
+  width:4px;
+  height:62%;
+  background:var(--red);
+  box-shadow:0 0 14px var(--red);
+}
+
+.panel>*{
+  position:relative;
+  z-index:2;
+}
+
+.input{
+  width:100%;
+  height:48px;
+  margin-bottom:9px;
+  padding:0 14px;
+  outline:none;
+  background:#08060d;
+  border:1px solid #3a294c;
+  color:#fff;
+  font-family:'Rajdhani';
+  font-size:16px;
+  font-weight:700;
+  letter-spacing:.4px;
+  clip-path:polygon(15px 0,100% 0,calc(100% - 15px) 100%,0 100%,0 15px);
+}
+
+.input::placeholder{
+  color:#756b86;
+}
+
+.row{
+  display:flex;
+  gap:8px;
+}
+
+.btn{
+  min-height:44px;
+  padding:0 13px;
+  border:1px solid var(--red);
+  background:#ff174f24;
+  color:#fff;
+  font-family:'Orbitron';
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.8px;
+  clip-path:polygon(13px 0,100% 0,calc(100% - 13px) 100%,0 100%);
+}
+
+.btn:active{
+  background:var(--red);
+}
+
+.btn.full{
+  width:100%;
+}
+
+.btn.purple{
+  border-color:var(--purple);
+  background:#8b35ff24;
+}
+
+.title{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+  margin:10px 0 9px;
+  font-family:'Orbitron';
+  font-size:12px;
+  letter-spacing:1.5px;
+}
+
+.count{
+  color:var(--red);
+  font-size:10px;
+  white-space:nowrap;
+}
+
+.repo,.file{
+  position:relative;
+  overflow:hidden;
+  margin-bottom:9px;
+  padding:12px;
+  background:linear-gradient(90deg,#120c1c,#09070e);
+  border:1px solid var(--line);
+  clip-path:polygon(16px 0,100% 0,100% calc(100% - 16px),calc(100% - 16px) 100%,0 100%,0 16px);
+}
+
+.repo:before,.file:before{
+  content:"";
+  position:absolute;
+  right:0;
+  top:0;
+  width:48%;
+  height:100%;
+  background:linear-gradient(90deg,transparent,#ff174f12);
+  pointer-events:none;
+}
+
+.repo.active{
+  border-color:var(--red);
+  box-shadow:0 0 15px #ff174f44;
+}
+
+.name{
+  position:relative;
+  z-index:2;
+  font-family:'Orbitron';
+  font-size:13px;
+  font-weight:800;
+  letter-spacing:.8px;
+  word-break:break-all;
+  margin-bottom:5px;
+}
+
+.meta{
+  position:relative;
+  z-index:2;
+  font-size:11px;
+  color:var(--muted);
+  font-weight:700;
+  letter-spacing:.5px;
+}
+
+.file-grid{
+  position:relative;
+  z-index:2;
+  display:flex;
+  gap:11px;
+  align-items:center;
+}
+
+.preview{
+  width:56px;
+  height:56px;
+  object-fit:cover;
+  border:1px solid var(--red);
+  flex-shrink:0;
+  clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);
+}
+
+.actions{
+  position:relative;
+  z-index:2;
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:7px;
+  margin-top:10px;
+}
+
+.mini{
+  height:36px;
+  border:1px solid var(--purple);
+  background:#8b35ff22;
+  color:white;
+  font-family:'Orbitron';
+  font-size:9px;
+  font-weight:800;
+  clip-path:polygon(11px 0,100% 0,calc(100% - 11px) 100%,0 100%);
+}
+
+.mini.red{
+  border-color:var(--red);
+  background:#ff174f22;
+}
+
+.upload-zone{
+  border:1px dashed var(--red);
+  padding:11px;
+  text-align:center;
+  color:var(--muted);
+  margin-bottom:10px;
+  clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px);
+}
+
+.upload-zone input{
+  width:100%;
+  font-family:'Rajdhani';
+  color:#fff;
+  font-size:13px;
+}
+
+.hidden{
+  display:none;
+}
+
+.loader{
+  text-align:center;
+  color:var(--red);
+  font-family:'Orbitron';
+  letter-spacing:2px;
+  margin:16px 0;
+  font-size:11px;
+}
+
+.toast{
+  position:fixed;
+  z-index:100;
+  left:16px;
+  right:16px;
+  bottom:18px;
+  padding:12px;
+  background:#120b18;
+  border:1px solid var(--red);
+  color:#fff;
+  text-align:center;
+  font-family:'Orbitron';
+  font-size:10px;
+  letter-spacing:.8px;
+  clip-path:polygon(13px 0,100% 0,calc(100% - 13px) 100%,0 100%,0 13px);
+}
+
+.empty{
+  color:var(--muted);
+  text-align:center;
+  padding:17px;
+  font-family:'Orbitron';
+  font-size:10px;
+  letter-spacing:1px;
+}
+
+@media(max-width:360px){
+  body{padding:11px}
+  .logo{font-size:16px}
+  .status{font-size:8px;padding:7px 8px}
+  .actions{grid-template-columns:1fr}
+  .mini{height:38px}
+}
+</style>
+</head>
+
+<body>
+<div class="scan"></div>
+
+<div class="app">
+
+  <div class="top">
+    <div class="logo">
+      <span>GX</span> REPO CORE
+      <small>GITHUB FILE MANAGER</small>
+    </div>
+    <div class="status" id="statusText">OFFLINE</div>
+  </div>
+
+  <div class="panel" id="loginPanel">
+    <input class="input" id="tokenInput" type="password" placeholder="PASTE GITHUB TOKEN">
+    <div class="row">
+      <button class="btn full" onclick="login()">CONNECT</button>
+      <button class="btn purple" onclick="clearToken()">CLEAR</button>
+    </div>
+  </div>
+
+  <div class="panel hidden" id="createPanel">
+    <div class="title">
+      <span>CREATE REPOSITORY</span>
+      <span class="count">NEW</span>
+    </div>
+    <input class="input" id="newRepoName" placeholder="REPO NAME">
+    <input class="input" id="newRepoDesc" placeholder="DESCRIPTION OPTIONAL">
+    <div class="row">
+      <button class="btn full" onclick="createRepo(false)">PUBLIC</button>
+      <button class="btn purple full" onclick="createRepo(true)">PRIVATE</button>
+    </div>
+  </div>
+
+  <div class="panel hidden" id="repoPanel">
+    <input class="input" id="repoSearch" placeholder="SEARCH REPOSITORY..." onkeyup="renderRepos()">
+    <div class="title">
+      <span>REPOSITORIES</span>
+      <span class="count" id="repoCount">0</span>
+    </div>
+    <div id="repoList"></div>
+  </div>
+
+  <div class="panel hidden" id="filePanel">
+    <div class="title">
+      <span id="currentRepoText">FILES</span>
+      <span class="count" id="fileCount">0</span>
+    </div>
+
+    <input class="input" id="fileSearch" placeholder="SEARCH FILE..." onkeyup="renderFiles()">
+    <input class="input" id="folderInput" placeholder="UPLOAD FOLDER PATH: images/ or scripts/">
+
+    <div class="upload-zone">
+      <input type="file" id="fileInput" multiple>
+      <br><br>
+      <button class="btn full" onclick="uploadFiles()">UPLOAD SELECTED FILES</button>
+    </div>
+
+    <div id="fileList"></div>
+  </div>
+
+  <div class="loader hidden" id="loader">PROCESSING...</div>
+
+</div>
+
+<div class="toast hidden" id="toast"></div>
+
+<script>
+let token = "";
+let username = "";
+let repos = [];
+let files = [];
+let selectedRepo = "";
+let selectedBranch = "main";
+
+function $(id){
+  return document.getElementById(id);
+}
+
+function toast(msg){
+  $("toast").innerText = msg;
+  $("toast").classList.remove("hidden");
+  setTimeout(() => $("toast").classList.add("hidden"), 1900);
+}
+
+function loader(show){
+  $("loader").classList.toggle("hidden", !show);
+}
+
+function headers(){
+  return {
+    Authorization: "Bearer " + token,
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28"
+  };
+}
+
+window.onload = async () => {
+  const saved = localStorage.getItem("gx_token") || "";
+  if(saved){
+    token = saved;
+    $("tokenInput").value = saved;
+    await autoLogin();
+  }
+};
+
+async function autoLogin(){
+  loader(true);
+
+  try{
+    const res = await fetch("https://api.github.com/user", {
+      headers: headers()
+    });
+
+    if(!res.ok){
+      localStorage.removeItem("gx_token");
+      loader(false);
+      return;
+    }
+
+    const user = await res.json();
+    username = user.login;
+
+    setOnlineUI();
+    await loadRepos();
+    toast("AUTO LOGIN: " + username);
+
+  }catch(e){
+    toast("AUTO LOGIN ERROR");
+  }
+
+  loader(false);
+}
+
+async function login(){
+  token = $("tokenInput").value.trim();
+
+  if(!token){
+    toast("TOKEN REQUIRED");
+    return;
+  }
+
+  localStorage.setItem("gx_token", token);
+  loader(true);
+
+  try{
+    const res = await fetch("https://api.github.com/user", {
+      headers: headers()
+    });
+
+    if(!res.ok){
+      loader(false);
+      toast("INVALID TOKEN / PERMISSION");
+      return;
+    }
+
+    const user = await res.json();
+    username = user.login;
+
+    setOnlineUI();
+    await loadRepos();
+    toast("CONNECTED: " + username);
+
+  }catch(e){
+    toast("CONNECTION ERROR");
+  }
+
+  loader(false);
+}
+
+function setOnlineUI(){
+  $("statusText").innerText = "ONLINE";
+  $("statusText").classList.add("on");
+
+  $("loginPanel").classList.add("hidden");
+  $("createPanel").classList.remove("hidden");
+  $("repoPanel").classList.remove("hidden");
+}
+
+function clearToken(){
+  localStorage.removeItem("gx_token");
+  token = "";
+  username = "";
+  repos = [];
+  files = [];
+  selectedRepo = "";
+  selectedBranch = "main";
+
+  $("tokenInput").value = "";
+  $("statusText").innerText = "OFFLINE";
+  $("statusText").classList.remove("on");
+
+  $("loginPanel").classList.remove("hidden");
+  $("createPanel").classList.add("hidden");
+  $("repoPanel").classList.add("hidden");
+  $("filePanel").classList.add("hidden");
+
+  toast("TOKEN CLEARED");
+}
+
+async function createRepo(isPrivate){
+  const name = $("newRepoName").value.trim();
+  const desc = $("newRepoDesc").value.trim();
+
+  if(!name){
+    toast("REPO NAME REQUIRED");
+    return;
+  }
+
+  loader(true);
+
+  try{
+    const res = await fetch("https://api.github.com/user/repos", {
+      method: "POST",
+      headers: {
+        ...headers(),
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        name: name,
+        description: desc,
+        private: isPrivate,
+        auto_init: true
+      })
+    });
+
+    if(res.ok){
+      $("newRepoName").value = "";
+      $("newRepoDesc").value = "";
+      toast("REPO CREATED");
+      await loadRepos();
+    }else{
+      const d = await res.json();
+      toast(d.message || "CREATE FAILED");
+    }
+  }catch(e){
+    toast("CREATE ERROR");
+  }
+
+  loader(false);
+}
+
+async function loadRepos(){
+  loader(true);
+
+  try{
+    const res = await fetch("https://api.github.com/user/repos?per_page=100&sort=updated", {
+      headers: headers()
+    });
+
+    const data = await res.json();
+    repos = Array.isArray(data) ? data : [];
+    renderRepos();
+
+  }catch(e){
+    repos = [];
+    renderRepos();
+    toast("LOAD REPOS ERROR");
+  }
+
+  loader(false);
+}
+
+function renderRepos(){
+  const key = $("repoSearch").value.toLowerCase();
+  const filtered = repos.filter(r => r.name.toLowerCase().includes(key));
+
+  $("repoCount").innerText = filtered.length;
+  $("repoList").innerHTML = "";
+
+  if(filtered.length === 0){
+    $("repoList").innerHTML = `<div class="empty">NO REPOSITORY FOUND</div>`;
+    return;
+  }
+
+  filtered.forEach(r => {
+    const active = r.name === selectedRepo ? "active" : "";
+
+    $("repoList").innerHTML += `
+      <div class="repo ${active}" onclick="openRepo('${esc(r.name)}','${esc(r.default_branch)}')">
+        <div class="name">▣ ${safeText(r.name)}</div>
+        <div class="meta">${r.private ? "PRIVATE" : "PUBLIC"} // ${safeText(r.default_branch)}</div>
+      </div>
+    `;
+  });
+}
+
+async function openRepo(repo, branch){
+  selectedRepo = repo;
+  selectedBranch = branch || "main";
+
+  $("filePanel").classList.remove("hidden");
+  $("currentRepoText").innerText = selectedRepo;
+
+  renderRepos();
+  await loadFiles();
+  window.scrollTo({top: $("filePanel").offsetTop - 8, behavior: "smooth"});
+}
+
+async function loadFiles(){
+  loader(true);
+
+  try{
+    const url = `https://api.github.com/repos/${username}/${selectedRepo}/contents?ref=${selectedBranch}`;
+
+    const res = await fetch(url, {
+      headers: headers()
+    });
+
+    const data = await res.json();
+
+    if(Array.isArray(data)){
+      files = data;
+    }else{
+      files = [];
+      toast(data.message || "EMPTY OR ERROR LOADING FILES");
+    }
+
+    renderFiles();
+
+  }catch(e){
+    files = [];
+    renderFiles();
+    toast("LOAD FILE ERROR");
+  }
+
+  loader(false);
+}
+
+function renderFiles(){
+  const key = $("fileSearch").value.toLowerCase();
+
+  const filtered = files.filter(f =>
+    f.name.toLowerCase().includes(key)
+  );
+
+  $("fileCount").innerText = filtered.length;
+  $("fileList").innerHTML = "";
+
+  if(filtered.length === 0){
+    $("fileList").innerHTML = `<div class="empty">NO FILES FOUND</div>`;
+    return;
+  }
+
+  filtered.forEach(f => {
+    const raw = makeRawLink(f.path);
+    const isImage = /\.(png|jpg|jpeg|gif|webp)$/i.test(f.name);
+
+    $("fileList").innerHTML += `
+      <div class="file">
+        <div class="file-grid">
+          ${isImage ? `<img class="preview" src="${raw}">` : ``}
+          <div>
+            <div class="name">${f.type === "dir" ? "📁" : "📄"} ${safeText(f.name)}</div>
+            <div class="meta">${safeText(f.type.toUpperCase())} // ${f.size || 0} BYTES</div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="mini" onclick="copyText('${esc(raw)}')">COPY RAW</button>
+          <button class="mini" onclick="openExternal('${esc(f.html_url)}')">OPEN</button>
+          ${
+            f.type === "file"
+            ? `<button class="mini red" onclick="deleteFile('${esc(f.path)}')">DELETE</button>`
+            : ``
+          }
+        </div>
+      </div>
+    `;
+  });
+}
+
+async function uploadFiles(){
+  if(!selectedRepo){
+    toast("SELECT REPO FIRST");
+    return;
+  }
+
+  const selected = $("fileInput").files;
+
+  if(selected.length === 0){
+    toast("SELECT FILES FIRST");
+    return;
+  }
+
+  let folder = $("folderInput").value.trim();
+
+  if(folder && !folder.endsWith("/")){
+    folder += "/";
+  }
+
+  loader(true);
+
+  let success = 0;
+  let lastRaw = "";
+
+  for(let file of selected){
+    const b64 = await toBase64(file);
+    const path = folder + file.name;
+    const apiPath = pathToApi(path);
+
+    try{
+      const res = await fetch(`https://api.github.com/repos/${username}/${selectedRepo}/contents/${apiPath}`, {
+        method: "PUT",
+        headers: {
+          ...headers(),
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          message: "Upload " + file.name,
+          content: b64.split(",")[1],
+          branch: selectedBranch
+        })
+      });
+
+      if(res.ok){
+        success++;
+        lastRaw = makeRawLink(path);
+      }else{
+        const d = await res.json();
+        console.log("UPLOAD FAILED", d);
+      }
+    }catch(e){
+      console.log("UPLOAD ERROR", e);
+    }
+  }
+
+  $("fileInput").value = "";
+
+  if(lastRaw){
+    copyText(lastRaw);
+  }
+
+  toast("UPLOAD DONE: " + success + " FILE/S");
+  await loadFiles();
+
+  loader(false);
+}
+
+async function deleteFile(path){
+  if(!confirm("Delete " + path + "?")){
+    return;
+  }
+
+  loader(true);
+
+  try{
+    const latest = await fetch(`https://api.github.com/repos/${username}/${selectedRepo}/contents/${pathToApi(path)}?ref=${selectedBranch}`, {
+      headers: headers()
+    });
+
+    const latestData = await latest.json();
+
+    if(!latest.ok || !latestData.sha){
+      toast(latestData.message || "SHA NOT FOUND");
+      loader(false);
+      return;
+    }
+
+    const res = await fetch(`https://api.github.com/repos/${username}/${selectedRepo}/contents/${pathToApi(path)}`, {
+      method: "DELETE",
+      headers: {
+        ...headers(),
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: "Delete " + path,
+        sha: latestData.sha,
+        branch: selectedBranch
+      })
+    });
+
+    const data = await res.json();
+
+    if(res.ok){
+      toast("FILE DELETED");
+      await loadFiles();
+    }else{
+      console.log(data);
+      toast(data.message || "DELETE FAILED");
+    }
+
+  }catch(e){
+    toast("DELETE ERROR");
+  }
+
+  loader(false);
+}
+
+function makeRawLink(path){
+  return `https://raw.githubusercontent.com/${username}/${selectedRepo}/${selectedBranch}/${encodeURI(path)}`;
+}
+
+function pathToApi(path){
+  return path.split("/").map(encodeURIComponent).join("/");
+}
+
+function toBase64(file){
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.readAsDataURL(file);
+  });
+}
+
+function copyText(text){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(() => {
+      toast("RAW LINK COPIED");
+    }).catch(() => {
+      fallbackCopy(text);
+    });
+  }else{
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text){
+  const area = document.createElement("textarea");
+  area.value = text;
+  document.body.appendChild(area);
+  area.select();
+  document.execCommand("copy");
+  document.body.removeChild(area);
+  toast("RAW LINK COPIED");
+}
+
+function openExternal(url){
+  window.open(url, "_blank");
+}
+
+function esc(str){
+  return String(str)
+    .replace(/\\/g, "\\\\")
+    .replace(/'/g, "\\'")
+    .replace(/\n/g, "");
+}
+
+function safeText(str){
+  return String(str)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;");
+}
+</script>
+</body>
+</html>
