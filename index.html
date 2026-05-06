@@ -20,11 +20,7 @@
   --dark:#06050a;
 }
 
-html,body{
-  width:100%;
-  min-height:100%;
-  overflow-x:hidden;
-}
+html,body{width:100%;min-height:100%;overflow-x:hidden}
 
 body{
   color:var(--text);
@@ -148,10 +144,7 @@ body:before{
   box-shadow:0 0 14px var(--red);
 }
 
-.panel>*{
-  position:relative;
-  z-index:2;
-}
+.panel>*{position:relative;z-index:2}
 
 .input{
   width:100%;
@@ -169,14 +162,9 @@ body:before{
   clip-path:polygon(15px 0,100% 0,calc(100% - 15px) 100%,0 100%,0 15px);
 }
 
-.input::placeholder{
-  color:#756b86;
-}
+.input::placeholder{color:#756b86}
 
-.row{
-  display:flex;
-  gap:8px;
-}
+.row{display:flex;gap:8px}
 
 .btn{
   min-height:44px;
@@ -191,18 +179,9 @@ body:before{
   clip-path:polygon(13px 0,100% 0,calc(100% - 13px) 100%,0 100%);
 }
 
-.btn:active{
-  background:var(--red);
-}
-
-.btn.full{
-  width:100%;
-}
-
-.btn.purple{
-  border-color:var(--purple);
-  background:#8b35ff24;
-}
+.btn:active{background:var(--red)}
+.btn.full{width:100%}
+.btn.purple{border-color:var(--purple);background:#8b35ff24}
 
 .title{
   display:flex;
@@ -304,10 +283,7 @@ body:before{
   clip-path:polygon(11px 0,100% 0,calc(100% - 11px) 100%,0 100%);
 }
 
-.mini.red{
-  border-color:var(--red);
-  background:#ff174f22;
-}
+.mini.red{border-color:var(--red);background:#ff174f22}
 
 .upload-zone{
   border:1px dashed var(--red);
@@ -318,16 +294,7 @@ body:before{
   clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px);
 }
 
-.upload-zone input{
-  width:100%;
-  font-family:'Rajdhani';
-  color:#fff;
-  font-size:13px;
-}
-
-.hidden{
-  display:none;
-}
+.hidden{display:none}
 
 .loader{
   text-align:center;
@@ -362,6 +329,62 @@ body:before{
   font-family:'Orbitron';
   font-size:10px;
   letter-spacing:1px;
+}
+
+.pick-info{
+  font-family:'Orbitron';
+  font-size:9px;
+  color:var(--muted);
+  margin-bottom:10px;
+  letter-spacing:.7px;
+}
+
+.progress-box{
+  margin-top:10px;
+  text-align:left;
+}
+
+.progress-head{
+  display:flex;
+  justify-content:space-between;
+  font-family:'Orbitron';
+  font-size:9px;
+  color:var(--green);
+  margin-bottom:6px;
+  letter-spacing:.7px;
+}
+
+.progress-bar{
+  height:12px;
+  background:#08060d;
+  border:1px solid #3a294c;
+  overflow:hidden;
+}
+
+.progress-fill{
+  width:0%;
+  height:100%;
+  background:linear-gradient(90deg,var(--red),var(--purple));
+  transition:.2s;
+}
+
+.logs{
+  margin-top:10px;
+  max-height:120px;
+  overflow:auto;
+  background:#08060d;
+  border:1px solid #3a294c;
+  padding:8px;
+  color:#cfc7df;
+  font-size:11px;
+  font-weight:700;
+  text-align:left;
+}
+
+.logs div{
+  padding:3px 0;
+  border-bottom:1px solid #2b2138;
+  word-break:break-word;
 }
 
 @media(max-width:360px){
@@ -427,9 +450,24 @@ body:before{
     <input class="input" id="folderInput" placeholder="UPLOAD FOLDER PATH: images/ or scripts/">
 
     <div class="upload-zone">
-      <input type="file" id="fileInput" multiple>
+      <input type="file" id="fileInput" multiple style="display:none" onchange="updatePickInfo()">
+
+      <div class="pick-info" id="pickInfo">NO FILE SELECTED</div>
+
+      <button class="btn purple full" onclick="pickFiles()">CHOOSE FILES</button>
       <br><br>
       <button class="btn full" onclick="uploadFiles()">UPLOAD SELECTED FILES</button>
+
+      <div class="progress-box hidden" id="uploadProgressBox">
+        <div class="progress-head">
+          <span id="uploadProgressText">READY</span>
+          <span id="uploadProgressPercent">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="uploadProgressFill"></div>
+        </div>
+        <div class="logs" id="uploadLogs"></div>
+      </div>
     </div>
 
     <div id="fileList"></div>
@@ -448,6 +486,7 @@ let repos = [];
 let files = [];
 let selectedRepo = "";
 let selectedBranch = "main";
+let refreshTimer = null;
 
 function $(id){
   return document.getElementById(id);
@@ -554,6 +593,11 @@ function setOnlineUI(){
 }
 
 function clearToken(){
+  if(refreshTimer){
+    clearInterval(refreshTimer);
+    refreshTimer = null;
+  }
+
   localStorage.removeItem("gx_token");
   token = "";
   username = "";
@@ -670,6 +714,8 @@ async function openRepo(repo, branch){
 
   renderRepos();
   await loadFiles();
+  startRealtimeRefresh();
+
   window.scrollTo({top: $("filePanel").offsetTop - 8, behavior: "smooth"});
 }
 
@@ -701,6 +747,32 @@ async function loadFiles(){
   }
 
   loader(false);
+}
+
+function startRealtimeRefresh(){
+  if(refreshTimer){
+    clearInterval(refreshTimer);
+  }
+
+  refreshTimer = setInterval(async () => {
+    if(selectedRepo && token){
+      try{
+        const url = `https://api.github.com/repos/${username}/${selectedRepo}/contents?ref=${selectedBranch}&t=${Date.now()}`;
+        const res = await fetch(url, {headers: headers()});
+        const data = await res.json();
+
+        if(Array.isArray(data)){
+          files = data;
+          renderFiles();
+          addLog("DATA REFRESHED");
+        }
+      }catch(e){
+        console.log("REFRESH ERROR", e);
+      }
+    }
+  }, 5000);
+
+  addLog("REALTIME REFRESH ON");
 }
 
 function renderFiles(){
@@ -746,6 +818,45 @@ function renderFiles(){
   });
 }
 
+function pickFiles(){
+  $("fileInput").click();
+}
+
+function updatePickInfo(){
+  const selected = $("fileInput").files;
+
+  if(!selected || selected.length === 0){
+    $("pickInfo").innerText = "NO FILE SELECTED";
+    return;
+  }
+
+  $("pickInfo").innerText = selected.length + " FILE/S SELECTED";
+  addLog(selected.length + " FILE/S SELECTED");
+}
+
+function showProgress(){
+  $("uploadProgressBox").classList.remove("hidden");
+}
+
+function setProgress(percent, text){
+  percent = Math.max(0, Math.min(100, Math.round(percent)));
+  $("uploadProgressFill").style.width = percent + "%";
+  $("uploadProgressPercent").innerText = percent + "%";
+  $("uploadProgressText").innerText = text;
+}
+
+function addLog(msg){
+  if(!$("uploadLogs")) return;
+
+  showProgress();
+
+  const time = new Date().toLocaleTimeString();
+  $("uploadLogs").innerHTML += `<div>[${safeText(time)}] ${safeText(msg)}</div>`;
+  $("uploadLogs").scrollTop = $("uploadLogs").scrollHeight;
+
+  console.log("[GX LOG]", msg);
+}
+
 async function uploadFiles(){
   if(!selectedRepo){
     toast("SELECT REPO FIRST");
@@ -766,51 +877,100 @@ async function uploadFiles(){
   }
 
   loader(true);
+  showProgress();
+  $("uploadLogs").innerHTML = "";
+  setProgress(0, "STARTING");
+  addLog("UPLOAD STARTED");
 
   let success = 0;
   let lastRaw = "";
 
-  for(let file of selected){
+  for(let i = 0; i < selected.length; i++){
+    const file = selected[i];
     const b64 = await toBase64(file);
     const path = folder + file.name;
     const apiPath = pathToApi(path);
 
+    const startPercent = Math.round((i / selected.length) * 100);
+    const endPercent = Math.round(((i + 1) / selected.length) * 100);
+
+    setProgress(startPercent, "UPLOADING " + (i + 1) + "/" + selected.length);
+    addLog("UPLOADING: " + path);
+
     try{
+      const oldSha = await getExistingSha(apiPath);
+
+      const body = {
+        message: oldSha ? "Update " + file.name : "Upload " + file.name,
+        content: b64.split(",")[1],
+        branch: selectedBranch
+      };
+
+      if(oldSha){
+        body.sha = oldSha;
+        addLog("UPDATING EXISTING FILE");
+      }
+
       const res = await fetch(`https://api.github.com/repos/${username}/${selectedRepo}/contents/${apiPath}`, {
         method: "PUT",
         headers: {
           ...headers(),
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          message: "Upload " + file.name,
-          content: b64.split(",")[1],
-          branch: selectedBranch
-        })
+        body: JSON.stringify(body)
       });
 
       if(res.ok){
         success++;
         lastRaw = makeRawLink(path);
+        addLog("SUCCESS: " + file.name);
       }else{
         const d = await res.json();
         console.log("UPLOAD FAILED", d);
+        addLog("FAILED: " + (d.message || file.name));
       }
     }catch(e){
       console.log("UPLOAD ERROR", e);
+      addLog("ERROR: " + e.message);
     }
+
+    setProgress(endPercent, "DONE " + (i + 1) + "/" + selected.length);
   }
 
   $("fileInput").value = "";
+  updatePickInfo();
 
   if(lastRaw){
     copyText(lastRaw);
   }
 
+  setProgress(100, "UPLOAD COMPLETE");
+  addLog("UPLOAD DONE: " + success + " FILE/S");
+
   toast("UPLOAD DONE: " + success + " FILE/S");
+
   await loadFiles();
+  setTimeout(loadFiles, 2500);
+  setTimeout(loadFiles, 6000);
 
   loader(false);
+}
+
+async function getExistingSha(apiPath){
+  try{
+    const res = await fetch(`https://api.github.com/repos/${username}/${selectedRepo}/contents/${apiPath}?ref=${selectedBranch}`, {
+      headers: headers()
+    });
+
+    if(!res.ok){
+      return "";
+    }
+
+    const data = await res.json();
+    return data.sha || "";
+  }catch(e){
+    return "";
+  }
 }
 
 async function deleteFile(path){
@@ -819,6 +979,7 @@ async function deleteFile(path){
   }
 
   loader(true);
+  addLog("DELETE: " + path);
 
   try{
     const latest = await fetch(`https://api.github.com/repos/${username}/${selectedRepo}/contents/${pathToApi(path)}?ref=${selectedBranch}`, {
@@ -850,14 +1011,18 @@ async function deleteFile(path){
 
     if(res.ok){
       toast("FILE DELETED");
+      addLog("FILE DELETED");
       await loadFiles();
+      setTimeout(loadFiles, 2500);
     }else{
       console.log(data);
       toast(data.message || "DELETE FAILED");
+      addLog("DELETE FAILED");
     }
 
   }catch(e){
     toast("DELETE ERROR");
+    addLog("DELETE ERROR");
   }
 
   loader(false);
